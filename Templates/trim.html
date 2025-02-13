@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trim Videos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <h1>Trim Videos</h1>
+    {% if success %}
+        <h2>Success!</h2>
+        <ul>
+            {% for filename, duration in video_data %}
+            <li>{{ filename }}: {{ duration }}s</li>
+            {% endfor %}
+        </ul>        
+        <p>{{ message }}</p>
+    {% else %}
+        <h2>Something went wrong:</h2>
+        <p>{{ message }}</p>
+    {% endif %}
+    <p><a href="{{ url_for('index') }}">Back to Home</a></p>
+</body>
+</html>

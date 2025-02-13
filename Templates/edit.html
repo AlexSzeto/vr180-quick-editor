@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit CSV</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <h1>Edit Data</h1>
+    <form method="post">
+        <table>
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                    {% if header == "Length" %}
+                    <th>{{ header }}</th>
+                    <th>Trimmed</th>
+                    {% elif header == "Keep" %}
+                    <th>{{ header }}</th>
+                    <th>Split</th>
+                    {% elif header == "Clip Name" %}
+                    <th>Name</th>                  
+                    {% elif header != "Clip Path" %}                    
+                    <th>{{ header }}</th>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                {% set outer_loop = loop %}
+                <tr>
+                    {% for cell in row %}
+                    {% if headers[loop.index0] != "Clip Path" %}
+                    <td>
+                        {% if headers[loop.index0] == "Clip Name" %}
+                            <div class="plain clip-name"><a href="#" onclick="playVideo({{outer_loop.index0}}, '{{cell}}')">{{ cell }}</a></div>
+                            <input type="hidden" name="{{ headers[loop.index0] }}" value="{{ cell }}">
+                        {% elif headers[loop.index0] == "Length" %}
+                            <div class="plain">{{ cell }}</div>
+                            <input type="hidden" name="{{ headers[loop.index0] }}" value="{{ cell }}">
+                            </td>
+                            <td>
+                            <div class="trimmed">--</div>
+                        {% elif headers[loop.index0] == "Motion" %}
+                            <select name="{{ headers[loop.index0] }}">
+                                <option value="None" {% if cell == "None" %}selected{% endif %}>None</option>
+                                <option value="Vehicular" {% if cell == "Vehicular" %}selected{% endif %}>Vehicular</option>
+                                <option value="Walking" {% if cell == "Walking" %}selected{% endif %}>Walking</option>
+                            </select>
+                        {% elif headers[loop.index0] == "Start" or headers[loop.index0] == "End" %}
+                            <input type="number" name="{{ headers[loop.index0] }}" value="{{ cell }}" onchange="updateTrimmed()">
+                        {% elif headers[loop.index0] == "Keep" %}
+                            <div class="check-container">
+                                <input type="checkbox" onchange="updateTrimmed()"  class="{{headers[loop.index0]}}" name="{{ headers[loop.index0] }}_{{ outer_loop.index0 }}" {% if cell == "TRUE" %}checked{% endif %}>
+                            </div>
+                            </td>
+                            <td>
+                                <div class="check-container">
+                                    <input type="checkbox" class="Split" name="Split_{{ outer_loop.index0 }}">
+                                </div>
+                            {% elif headers[loop.index0] == "Family" %}
+                            <div class="check-container">
+                                <input type="checkbox" onchange="updateTrimmed()"  class="{{headers[loop.index0]}}" name="{{ headers[loop.index0] }}_{{ outer_loop.index0 }}" {% if cell == "TRUE" %}checked{% endif %}>
+                            </div>
+                        {% elif headers[loop.index0] == "Description" %}
+                            <input class="description" type="text" name="{{ headers[loop.index0] }}" value="{{ cell }}">
+                        {% elif headers[loop.index0] == "Notes" %}
+                            <textarea class="notes" name="{{ headers[loop.index0] }}">{{ cell }}</textarea>
+                        {% else %}
+                            {{ cell }}
+                        {% endif %}
+                    </td>
+                    {% else %}
+                    <input type="hidden" name="{{ headers[loop.index0] }}" value="{{ cell }}">
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <div>Total Runtime: <span class="totalTime">--</span></div><br/>
+        <button type="button" onclick="autoTime()">Auto Time</button>
+        <button type="button" onclick="splitVideos()">Split Videos</button>
+        <button type="submit">Save Changes</button>
+        <button type="reset" onclick="window.location.reload()">Reset</button>
+    </form>
+    <p><a href="{{ url_for('index') }}">Back to Home</a></p>
+    <div class="preview-section-frame">
+        <p>TIME: <span class="videoTimePercent">--</span></p>
+        <div class="preview-video-frame">
+            <video id="videoPlayer" width="1200" height="800" controls>
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>    
+        </div>
+    </div>    
+    <script>
+        const rows = document.querySelectorAll("table tbody tr");
+        const dataElements = []
+        rows.forEach((row, index) => {
+            const data = {
+                index: index,
+                clipName: row.querySelector("input[name='Clip Name']"),
+                length: row.querySelector("input[name='Length']"),
+                start: row.querySelector("input[name='Start']"),
+                end: row.querySelector("input[name='End']"),
+                trimmed: row.querySelector(".trimmed"),
+                keep: row.querySelector("input.Keep"),
+                split: row.querySelector("input.Split"),
+            }
+            dataElements.push(data)
+        })
+
+        function playVideo(index, clipName) {
+            const videoPlayer = document.getElementById("videoPlayer")
+            start = dataElements[index].start.value ?? 0
+            end = dataElements[index].end.value ?? dataElements[index].length.value
+            videoPlayer.src = `${clipName}#t=${start},${end}`
+
+            // videoPlayer.currentTime = start
+            videoPlayer.play()
+            videoPlayer.ontimeupdate = function() {
+                if(videoPlayer.currentTime >= end || videoPlayer.currentTime < start) {
+                    document.querySelector(".videoTimePercent").textContent = `${videoPlayer.currentTime.toFixed(0)}`
+                }
+                const percent = (videoPlayer.currentTime - start) / (end - start) * 100
+                document.querySelector(".videoTimePercent").textContent = `${videoPlayer.currentTime.toFixed(0)} (${percent.toFixed(2)}%)`
+            }
+        }
+
+        const IDEAL_LENGTH = 30
+        function autoTime() {
+            dataElements.forEach(data => {
+                const length = parseFloat(data.length.value)
+                if (length < IDEAL_LENGTH) {
+                    data.start.value = 1
+                    data.end.value = length - 1
+                } else {
+                    data.start.value = Math.floor((length - IDEAL_LENGTH) / 2)
+                    data.end.value = length - Math.ceil((length - IDEAL_LENGTH) / 2)
+                }
+            })
+            updateTrimmed()
+        }
+
+        function splitVideos() {
+            const files = dataElements
+            .filter(data => data.split.checked)
+            .map(data => data.clipName.value)
+
+            const folderName = prompt("Enter the folder name to save the split videos")
+
+            if(folderName === null) {
+                return
+            }
+
+            fetch("{{ url_for('split_videos') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    files,
+                    folderName
+                })
+            }).then(response => {
+                if(response.ok) {
+                    // refresh page
+                    window.location.reload()
+                } else {
+                    alert("Failed to split videos")
+                }
+            })
+        }
+
+        function updateTrimmed() {
+            let totalTime = 0
+            dataElements.forEach(data => {
+                if(data.start.value === "" || data.end.value === "") {
+                    return
+                }
+                const start = parseFloat(data.start.value)
+                const end = parseFloat(data.end.value)
+                data.trimmed.textContent = (end - start).toFixed(0)
+                if(data.keep.checked) {
+                    totalTime += end - start
+                }
+            })
+            document.querySelector(".totalTime").textContent = Math.floor(totalTime / 60) + "m:" + (totalTime % 60).toFixed(2) % 60 + "s"
+        }
+
+        updateTrimmed()
+    </script>
+</body>
+</html>

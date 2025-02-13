@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rename Files</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <h1>Rename Videos</h1>
+    {% if success %}
+        <h2>Success!</h2>
+        <ul>
+            {% for old, new in renamed_files %}
+            <li>{{ old }} → {{ new }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h2>Something went wrong:</h2>
+        <p>{{ message }}</p>
+    {% endif %}
+    <p><a href="{{ url_for('index') }}">Back to Home</a></p>
+</body>
+</html>

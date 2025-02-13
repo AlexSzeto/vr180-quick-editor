@@ -1,0 +1,146 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: 'Fira Code', monospace;
+  font-size: 16px;
+}
+
+li {
+  margin-bottom: 0.25em;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+.project-folder a {
+  color: green;
+  font-weight: bold;
+}
+
+h1 {
+  margin-bottom: 0;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+input,
+textarea {
+  font-family: 'Fira Code', monospace;
+  /* font-size: 24px; */
+  background-color: black;
+  color: white;
+  border: none;
+  outline: none;
+  padding: 0 1em;
+}
+
+textarea {
+  resize: none;
+}
+
+table,
+th,
+td {
+  border: 1px solid white;
+  border-collapse: collapse;
+}
+
+th,
+td .plain,
+td .trimmed {
+  padding: 0 1em;
+  text-align: center;
+}
+
+select {
+  background-color: black;
+  color: white;
+  border: none;
+  outline: none;
+  font-family: 'Fira Code', monospace;
+  /* font-size: 24px; */
+  padding: 0 1em;
+}
+
+td input.description {
+  width: 25em;
+}
+
+button {
+  border: 1px solid white;
+  border-radius: 2px;
+  padding: 1em;
+  background-color: black;
+  color: white;
+  font-family: 'Fira Code', monospace;
+  /* font-size: 24px; */
+}
+
+button:hover {
+  background-color: #333;
+}
+
+button:active {
+  background-color: #999;
+  color: black;
+}
+
+.check-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input[type='checkbox'] {
+  appearance: none;
+  width: 1em;
+  height: 1em;
+  border: none;
+  background-color: black;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type='checkbox']:hover {
+  appearance: none;
+  width: 1em;
+  height: 1em;
+  border: none;
+  background-color: #333;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type='checkbox']:checked::before {
+  font-weight: bold;
+  content: 'X';
+  position: absolute;
+  top: 0;
+  left: 0.75em;
+  width: 1em;
+  height: 1em;
+}
+
+.preview-section-frame {
+  padding: 1em;
+  border: 1px solid white;
+  width: min-content;
+}
+
+.preview-video-frame {
+  width: 600px;
+  height: 400px;
+  overflow: hidden;
+
+  video {
+    width: 2400px;
+    height: 1600px;
+    position: relative;
+    top: -600px;
+    left: -450px;
+  }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Current Project</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='main.css') }}"
+    />
+  </head>
+  <body>
+    <h1>Current Project</h1>
+    <h2>{{ project_name }}</h2>
+    <ul>
+      <li>
+        <a href="{{ url_for('project_page') }}">Change Current Project</a>
+      </li>
+      <li>
+        <a href="{{ url_for('open_folder') }}">Open Folder In Explorer</a>
+      </li>
+      <li {% if has_renamed %}class="project-folder" {% endif %}>
+        <a href="{{ url_for('rename_files') }}">Rename Videos</a>
+      </li>
+      <li {% if has_video_details %}class="project-folder" {% endif %}>
+        <a href="{{ url_for('generate_csv') }}">Create Edit Data</a>
+      </li>
+      <li {% if has_video_details %}class="project-folder" {% endif %}>
+        <a href="{{ url_for('edit_csv') }}">Edit Data</a>
+      </li>
+      <li {% if has_trimmed_videos %} class="project-folder" {% endif %}>
+        <a href="{{ url_for('trim_videos') }}">Trim Videos</a>
+      </li>
+      <li {% if has_upscaled_videos %} class="project-folder" {% endif %}>
+        <a href="{{ url_for('move_trimmed_to_upscaled') }}"
+          >Bypass Upscale (Or AI Upscale Videos into /upscale)</a
+        >
+      </li>
+      <li {% if has_combined_video %} class="project-folder" {% endif %}>
+        <a href="{{ url_for('combine_videos') }}">Combine into Final Video</a>
+      </li>
+      <li {% if has_final_output %} class="project-folder" {% endif %}>
+        <a href="{{ url_for('inject_video') }}">Inject Metadata</a>
+      </li>
+    </ul>
+  </body>
+</html>
