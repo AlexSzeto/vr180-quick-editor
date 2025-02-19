@@ -1,0 +1,17 @@
+{
+  "name": "vr180-quick-editor-rewrite",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "server": "node index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "htm": "^3.1.1",
+    "preact": "^10.26.2"
+  }
+}
