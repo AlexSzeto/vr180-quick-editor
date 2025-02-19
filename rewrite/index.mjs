@@ -47,6 +47,10 @@ async function start() {
       )
     })
 
+    app.route('/api/project').get((req, res) => {
+      res.json({ id: config.current })
+    })
+
     const sendPage = sendHTMLPage(PAGE_TITLE_MAP)
     const sendFile = sendRequestFile(path.join(__dirname, 'public'))
 

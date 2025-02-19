@@ -1,5 +1,6 @@
 import { render, Component } from 'https://cdn.skypack.dev/preact'
 import { html } from 'https://cdn.skypack.dev/htm/preact'
+import { fetchProjectData, header } from './js/common.js'
 
 class App extends Component {
   constructor() {
@@ -29,6 +30,7 @@ class App extends Component {
 
   render() {
     return html`
+      <${header} project=${this.props.project} />
       <div>
         <ul>
           ${this.state.projects.map(project => html`
@@ -42,4 +44,5 @@ class App extends Component {
   }
 }
 
-render(html`<${App} />`, document.getElementById('app'))
+fetchProjectData()
+  .then(project => render(html`<${App} project=${project} />`, document.getElementById('app')))
