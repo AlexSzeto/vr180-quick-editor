@@ -1,6 +1,6 @@
 import os
 import subprocess
-from moviepy import VideoFileClip, concatenate_videoclips, vfx, afx
+from moviepy import VideoFileClip, ImageClip, concatenate_videoclips, CompositeVideoClip, vfx, afx
 
 def get_video_bitrate(video_path):
     try:
@@ -59,6 +59,9 @@ def combine_videos_with_crossfade(input_folder, output_file, crossfade_duration=
         method="compose",  # Ensures clips are aligned correctly
         padding=-crossfade_duration  # Add padding for the crossfade transition
     )
+    
+    # vignette_clip = ImageClip("vignette_mask.png", transparent=True).with_duration(final_video.duration).with_fps(final_video.fps)
+    # final_video = CompositeVideoClip([final_video, vignette_clip])
 
     # Write the final video to a file
     final_video.write_videofile(output_file, 
