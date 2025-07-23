@@ -11,13 +11,15 @@
   </head>
   <body>
     <h1>Select Project</h1>
-    <ul>
+    <ul class="project-list">
       {% for folder in folders %}
       <li
         {% if folder['is_project'] %}
         class="project-folder"
         {% endif %}
       >
+        <input type="checkbox" class="project-checkbox" value="{{ folder['path'] }}" 
+               {% if not folder['is_project'] %}disabled{% endif %}>
         <a href="{{ url_for('save_project', folder=folder['path']) }}"
           >
           
@@ -27,5 +29,51 @@
       </li>
       {% endfor %}
     </ul>
+    
+    <div style="margin-top: 20px;">
+      <button type="button" onclick="mergeProjects(false)">Merge</button>
+      <button type="button" onclick="mergeProjects(true)">Merge Copy</button>
+    </div>
+    
+    <script>
+      function mergeProjects(keepOldProject) {
+        const checkboxes = document.querySelectorAll('.project-checkbox:checked');
+        const selectedProjects = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (selectedProjects.length < 2) {
+          alert('Please select at least 2 projects to merge');
+          return;
+        }
+        
+        const newProjectName = prompt('Enter the name for the merged project:');
+        if (!newProjectName) {
+          return;
+        }
+        
+        fetch('/merge_project', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            projects: selectedProjects,
+            newProjectName: newProjectName,
+            keepOldProject: keepOldProject
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Projects merged successfully!');
+            window.location.reload();
+          } else {
+            alert('Error merging projects: ' + data.message);
+          }
+        })
+        .catch(error => {
+          alert('Error merging projects: ' + error.message);
+        });
+      }
+    </script>
   </body>
 </html>

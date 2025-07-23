@@ -369,5 +369,103 @@ def inject_video():
     inject_spatial_data(input_video, output_video)
     return render_template("inject.html")
 
+@app.route("/merge_project", methods=["POST"])
+def merge_project():
+    try:
+        data = request.get_json()
+        projects = data["projects"]
+        new_project_name = data["newProjectName"]
+        keep_old_project = data["keepOldProject"]
+        
+        if os.path.exists("settings.txt"):
+            with open("settings.txt", "r") as f:
+                base_path = f.read().strip()
+        else:
+            return {"success": False, "message": "Settings file not found"}, 400
+        
+        # Extract dates from project folders and find the latest one
+        dates = []
+        pattern = re.compile(r"^(\d{4}-\d{2}(?:-\d{2})?)\s.*")
+        
+        for project in projects:
+            match = pattern.match(project)
+            if match:
+                dates.append(match.group(1))
+        
+        if not dates:
+            return {"success": False, "message": "No valid project dates found"}, 400
+        
+        # Sort dates and get the latest one
+        latest_date = sorted(dates)[-1]
+        
+        # Create new project folder
+        new_folder_name = f"{latest_date} {new_project_name}"
+        new_project_path = os.path.join(base_path, new_folder_name)
+        
+        if os.path.exists(new_project_path):
+            return {"success": False, "message": f"Project folder already exists: {new_folder_name}"}, 400
+        
+        os.makedirs(new_project_path, exist_ok=True)
+        
+        # Collect all video files and CSV data
+        all_csv_data = []
+        headers = None
+        
+        for project in projects:
+            project_path = os.path.join(base_path, project)
+            csv_file = os.path.join(project_path, "video_details.csv")
+            
+            if not os.path.exists(csv_file):
+                continue
+            
+            # Read CSV data
+            with open(csv_file, "r") as f:
+                reader = csv.reader(f)
+                csv_data = [row for row in reader]
+            
+            if headers is None:
+                headers = csv_data[0]
+            
+            # Copy video files and update paths in CSV data
+            for row in csv_data[1:]:
+                if len(row) > 0:
+                    old_video_path = row[0]  # Clip Path column
+                    video_filename = os.path.basename(old_video_path)
+                    new_video_path = os.path.join(new_project_path, video_filename)
+                    
+                    # Copy the video file
+                    if os.path.exists(old_video_path):
+                        import shutil
+                        shutil.copy2(old_video_path, new_video_path)
+                        
+                        # Update the path in the CSV row
+                        row[0] = new_video_path
+                        all_csv_data.append(row)
+        
+        # Sort data by filename (Clip Name column, which is typically column 1)
+        if len(all_csv_data) > 0:
+            all_csv_data.sort(key=lambda row: row[1] if len(row) > 1 else "")
+        
+        # Write merged CSV file
+        if headers:
+            merged_csv_path = os.path.join(new_project_path, "video_details.csv")
+            with open(merged_csv_path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(headers)
+                writer.writerows(all_csv_data)
+        
+        # Delete old project folders if requested
+        if not keep_old_project:
+            import shutil
+            for project in projects:
+                project_path = os.path.join(base_path, project)
+                if os.path.exists(project_path):
+                    shutil.rmtree(project_path)
+        
+        return {"success": True, "message": f"Projects merged into {new_folder_name}"}, 200
+        
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
 if __name__ == "__main__":
     app.run(debug=True)
