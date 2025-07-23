@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run editor.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/editor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "C:/Users/alexs/AppData/Local/Programs/Python/Python313/python.exe",
+            "stopOnEntry": false,
+            "args": []
+        },
+        {
+            "name": "Debug editor.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/editor.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "python": "C:/Users/alexs/AppData/Local/Programs/Python/Python313/python.exe",
+            "stopOnEntry": true,
+            "args": [],
+            "justMyCode": false
+        }
+    ]
+}
