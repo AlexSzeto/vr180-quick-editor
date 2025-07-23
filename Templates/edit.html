@@ -42,7 +42,7 @@
                             <input type="hidden" name="{{ headers[loop.index0] }}" value="{{ cell }}">
                             </td>
                             <td>
-                            <div class="trimmed">--</div>
+                            <input type="number" class="trimmed" onchange="updateFromTrimmed(this)">
                         {% elif headers[loop.index0] == "Motion" %}
                             <select name="{{ headers[loop.index0] }}">
                                 <option value="None" {% if cell == "None" %}selected{% endif %}>None</option>
@@ -89,6 +89,7 @@
     </form>
     <p><a href="{{ url_for('index') }}">Back to Home</a></p>
     <div class="preview-section-frame">
+        <p>FILE: <span class="currentFileName">--</span></p>
         <p>TIME: <span class="videoTimePercent">--</span></p>
         <div class="preview-video-frame">
             <video id="videoPlayer" width="1200" height="800" controls>
@@ -107,7 +108,7 @@
                 length: row.querySelector("input[name='Length']"),
                 start: row.querySelector("input[name='Start']"),
                 end: row.querySelector("input[name='End']"),
-                trimmed: row.querySelector(".trimmed"),
+                trimmed: row.querySelector("input.trimmed"),
                 keep: row.querySelector("input.Keep"),
                 split: row.querySelector("input.Split"),
             }
@@ -116,8 +117,18 @@
 
         function playVideo(index, clipName) {
             const videoPlayer = document.getElementById("videoPlayer")
-            start = dataElements[index].start.value ?? 0
-            end = dataElements[index].end.value ?? dataElements[index].length.value
+            // Handle empty or invalid start/end values properly
+            const startValue = dataElements[index].start.value
+            const endValue = dataElements[index].end.value
+            const lengthValue = parseFloat(dataElements[index].length.value)
+            
+            // Convert to numbers, defaulting to 0 for start and full length for end
+            start = (startValue && !isNaN(parseFloat(startValue))) ? parseFloat(startValue) : 0
+            end = (endValue && !isNaN(parseFloat(endValue))) ? parseFloat(endValue) : lengthValue
+            
+            // Update the file name display
+            document.querySelector(".currentFileName").textContent = clipName
+            
             videoPlayer.src = `${clipName}#t=${start},${end}`
 
             // videoPlayer.currentTime = start
@@ -125,9 +136,10 @@
             videoPlayer.ontimeupdate = function() {
                 if(videoPlayer.currentTime >= end || videoPlayer.currentTime < start) {
                     document.querySelector(".videoTimePercent").textContent = `${videoPlayer.currentTime.toFixed(0)}`
+                } else {
+                    const percent = (videoPlayer.currentTime - start) / (end - start) * 100
+                    document.querySelector(".videoTimePercent").textContent = `${videoPlayer.currentTime.toFixed(0)} (${percent.toFixed(2)}%)`
                 }
-                const percent = (videoPlayer.currentTime - start) / (end - start) * 100
-                document.querySelector(".videoTimePercent").textContent = `${videoPlayer.currentTime.toFixed(0)} (${percent.toFixed(2)}%)`
             }
         }
 
@@ -176,17 +188,49 @@
             })
         }
 
+        function updateFromTrimmed(trimmedInput) {
+            // Find the row this trimmed input belongs to
+            const row = trimmedInput.closest('tr');
+            const rowIndex = Array.from(row.parentNode.children).indexOf(row);
+            const data = dataElements[rowIndex];
+            
+            const trimmedLength = parseFloat(trimmedInput.value);
+            const totalLength = parseFloat(data.length.value);
+            
+            if (!isNaN(trimmedLength) && trimmedLength > 0 && trimmedLength <= totalLength) {
+                // Calculate start and end times to center the trimmed section
+                const startTime = Math.max(0, (totalLength - trimmedLength) / 2);
+                const endTime = Math.min(totalLength, startTime + trimmedLength);
+                
+                // Update the start and end inputs
+                data.start.value = startTime.toFixed(0);
+                data.end.value = endTime.toFixed(0);
+                
+                // Update the total time display
+                updateTrimmed();
+            }
+        }
+
         function updateTrimmed() {
             let totalTime = 0
             dataElements.forEach(data => {
-                if(data.start.value === "" || data.end.value === "") {
-                    return
-                }
-                const start = parseFloat(data.start.value)
-                const end = parseFloat(data.end.value)
-                data.trimmed.textContent = (end - start).toFixed(0)
-                if(data.keep.checked) {
-                    totalTime += end - start
+                const startValue = data.start.value;
+                const endValue = data.end.value;
+                
+                if(startValue !== "" && endValue !== "") {
+                    const start = parseFloat(startValue);
+                    const end = parseFloat(endValue);
+                    const trimmedDuration = end - start;
+                    
+                    // Update the trimmed input field to show calculated duration
+                    data.trimmed.value = trimmedDuration.toFixed(0);
+                    
+                    if(data.keep.checked) {
+                        totalTime += trimmedDuration;
+                    }
+                } else {
+                    // Clear the trimmed field if start/end are empty
+                    data.trimmed.value = "";
                 }
             })
             document.querySelector(".totalTime").textContent = Math.floor(totalTime / 60) + "m:" + (totalTime % 60).toFixed(2) % 60 + "s"
