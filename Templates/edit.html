@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit CSV</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
 </head>
 <body>
     <h1>Edit Data</h1>
@@ -169,6 +170,8 @@
                 return
             }
 
+            createModal("Splitting videos...");
+
             fetch("{{ url_for('split_videos') }}", {
                 method: "POST",
                 headers: {
@@ -180,12 +183,13 @@
                 })
             }).then(response => {
                 if(response.ok) {
-                    // refresh page
-                    window.location.reload()
+                    setRefreshModalPrompt("Videos split successfully!");
                 } else {
-                    alert("Failed to split videos")
+                    setRefreshModalPrompt("Failed to split videos");
                 }
-            })
+            }).catch(error => {
+                setRefreshModalPrompt("Error: " + error.message);
+            });
         }
 
         function updateFromTrimmed(trimmedInput) {

@@ -88,10 +88,10 @@ function createModal(msg) {
 }
 
 /**
- * Updates an existing modal with a new message and adds a dismiss button
+ * Updates an existing modal with a new message and adds a button that refreshes the page
  * @param {string} msg - The new message to display
  */
-function setModalPrompt(msg) {
+function setRefreshModalPrompt(msg) {
     if (!currentModal) {
         createModal(msg);
     }
@@ -102,16 +102,16 @@ function setModalPrompt(msg) {
         messageEl.textContent = msg;
     }
 
-    // Add dismiss button
+    // Add refresh button
     const buttonContainer = currentModal.querySelector('#modal-buttons');
     if (buttonContainer) {
         // Clear existing buttons
         buttonContainer.innerHTML = '';
 
-        // Create dismiss button
-        const dismissBtn = document.createElement('button');
-        dismissBtn.textContent = 'OK';
-        dismissBtn.style.cssText = `
+        // Create refresh button
+        const refreshBtn = document.createElement('button');
+        refreshBtn.textContent = 'OK';
+        refreshBtn.style.cssText = `
             border: 1px solid white;
             border-radius: 2px;
             padding: 10px 20px;
@@ -123,28 +123,30 @@ function setModalPrompt(msg) {
         `;
 
         // Add hover effects
-        dismissBtn.addEventListener('mouseenter', () => {
-            dismissBtn.style.backgroundColor = '#333';
+        refreshBtn.addEventListener('mouseenter', () => {
+            refreshBtn.style.backgroundColor = '#333';
         });
 
-        dismissBtn.addEventListener('mouseleave', () => {
-            dismissBtn.style.backgroundColor = 'black';
+        refreshBtn.addEventListener('mouseleave', () => {
+            refreshBtn.style.backgroundColor = 'black';
         });
 
-        dismissBtn.addEventListener('mousedown', () => {
-            dismissBtn.style.backgroundColor = '#999';
-            dismissBtn.style.color = 'black';
+        refreshBtn.addEventListener('mousedown', () => {
+            refreshBtn.style.backgroundColor = '#999';
+            refreshBtn.style.color = 'black';
         });
 
-        dismissBtn.addEventListener('mouseup', () => {
-            dismissBtn.style.backgroundColor = '#333';
-            dismissBtn.style.color = 'white';
+        refreshBtn.addEventListener('mouseup', () => {
+            refreshBtn.style.backgroundColor = '#333';
+            refreshBtn.style.color = 'white';
         });
 
-        // Add click handler to dismiss modal
-        dismissBtn.addEventListener('click', dismissModal);
+        // Add click handler to refresh page instead of dismissing modal
+        refreshBtn.addEventListener('click', () => {
+            window.location.reload();
+        });
 
-        buttonContainer.appendChild(dismissBtn);
+        buttonContainer.appendChild(refreshBtn);
     }
 }
 
@@ -224,6 +226,6 @@ function createCustomModal(msg, buttons = []) {
 
 // Export functions for global use
 window.createModal = createModal;
-window.setModalPrompt = setModalPrompt;
+window.setRefreshModalPrompt = setRefreshModalPrompt;
 window.dismissModal = dismissModal;
 window.createCustomModal = createCustomModal;
