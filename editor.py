@@ -51,7 +51,10 @@ def index():
         project_name = "None Selected"
     
     folder_path = os.path.join(current_path, project_name)
-    has_renamed = os.path.exists(os.path.join(folder_path, "01.mp4"))
+    # Check for renamed videos using the new naming format: {folder_name}_01.mp4
+    folder_name = os.path.basename(folder_path)
+    expected_first_file = f"{folder_name}_01.mp4".replace(" ", "_")
+    has_renamed = os.path.exists(os.path.join(folder_path, expected_first_file))
     has_video_details = os.path.exists(os.path.join(folder_path, "video_details.csv"))
     has_trimmed_videos = os.path.exists(os.path.join(folder_path, "trimmed"))
     upscaled_folder = os.path.join(folder_path, "upscaled")
@@ -128,14 +131,19 @@ def rename_files():
       # Sort files alphabetically
       files.sort()
 
-      # Rename files with padded numbers
+      # Get the folder name for the prefix
+      folder_name = os.path.basename(folder_path)
+      
+      # Rename files with folder name prefix and padded numbers
       rename_files = []
       for i, file in enumerate(files, start=1):
           # Extract file extension
           _, ext = os.path.splitext(file)
           
-          # Create the new filename
-          new_name = os.path.join(folder_path, f"{i:02}{ext}")
+          # Create the new filename with folder name prefix, space, and padded number
+          # Then replace all spaces with underscores
+          new_filename = f"{folder_name} {i:02}{ext}".replace(" ", "_")
+          new_name = os.path.join(folder_path, new_filename)
           
           # Rename the file
           os.rename(file, new_name)
